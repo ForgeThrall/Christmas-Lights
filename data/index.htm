@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Christmas Lights</title>
+	<link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg"/>
+	<script>
+		var socket;
+		var currentColor = {h: 0, s: .5, v: 1};
+		const API = {
+			COLOR: 100,
+		}
+
+		function init() {
+			initHandlers();
+			initSocket();
+		}
+
+		function initHandlers() {
+			dragBootstrap(document.getElementById("dial-container"), hueDialDrag);
+			dragBootstrap(document.getElementById("sat-slider-container"), satSliderDrag);
+			dragBootstrap(document.getElementById("val-slider-container"), valSliderDrag);
+		}
+
+		function dragBootstrap(element, handler) {
+			element.addEventListener("mousedown", (e) => {
+				document.addEventListener("mousemove", handler);
+				document.addEventListener("mouseup", function () {
+					document.removeEventListener("mousemove", handler)
+				}, {once: true});
+				handler(e);
+			})
+		}
+
+		function hueDialDrag(e) {
+			const cursor = document.getElementById("dial-cursor");
+			// cartesian from center
+			let rect = cursor.parentElement.getBoundingClientRect();
+			let xTarget = e.pageX - rect.x - rect.width/2;
+			let yTarget = e.pageY - rect.y - rect.height/2;
+			// normalized polar
+			let t = Math.atan2(yTarget, xTarget);
+			let r = (rect.width*.95)/2;
+			let x = Math.cos(t) * r + rect.width/2;
+			let y = Math.sin(t) * r + rect.height/2;
+			cursor.style.top = `${y}px`;
+			cursor.style.left = `${x}px`;
+
+			let hue = rangeMap(t, -Math.PI, Math.PI, 0, 1, -Math.PI/2);
+			updateColor({h: hue, s: null, v: null});
+		}
+
+		function satSliderDrag(e) {
+			const cursor = document.getElementById("sat-slider-cursor");
+			let rect = cursor.parentElement.getBoundingClientRect();
+			let xTarget = e.pageX - rect.x;
+			let x = Math.max(0, Math.min(xTarget, rect.width));
+			cursor.style.left = `${x}px`;
+			let sat = rangeMap(x, 0, rect.width, 0, 1);
+			updateColor({h: null, s: sat, v: null});
+		}
+
+		function valSliderDrag(e) {
+			const cursor = document.getElementById("val-slider-cursor");
+			let rect = cursor.parentElement.getBoundingClientRect();
+			let xTarget = e.pageX - rect.x;
+			let x = Math.max(0, Math.min(xTarget, rect.width));
+			cursor.style.left = `${x}px`;
+			let val = rangeMap(x, 0, rect.width, 0, 1);
+			updateColor({h: null, s: null, v: val});
+		}
+
+		function updateColor(hsv) {
+			currentColor.h = hsv.h ?? currentColor.h;
+			currentColor.s = hsv.s ?? currentColor.s;
+			currentColor.v = hsv.v ?? currentColor.v;
+
+			picker = document.getElementById("color-picker-container");
+
+			let hue = hsvToRgb({h: currentColor.h, s: 1, v: 1});
+			picker.style.setProperty("--hue", `rgb(${hue.r}, ${hue.g}, ${hue.b})`);
+			let hueSat = hsvToRgb({h: currentColor.h, s: currentColor.s, v: 1});
+			picker.style.setProperty("--hue-sat", `rgb(${hueSat.r}, ${hueSat.g}, ${hueSat.b})`);
+			let hueSatVal = hsvToRgb(currentColor);
+			picker.style.setProperty("--hue-sat-val", `rgb(${hueSatVal.r}, ${hueSatVal.g}, ${hueSatVal.b})`);
+
+			//TODO: push this info to the controller through a websocket
+		}
+
+		function rangeMap(val, domainMin, domainMax, rangeMin, rangeMax, domainOffset = 0) {
+			let domainWidth = domainMax - domainMin;
+			let rangeWidth = rangeMax - rangeMin;
+
+			val += domainOffset;
+			if(val < domainMin) val += domainWidth;
+			if(val > domainMax) val -= domainWidth;
+
+			val -= domainMin;
+			val *= rangeWidth/domainWidth;
+			val += rangeMin;
+
+			return val;
+		}
+
+		// https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
+		// h, s, v ∈ [0, 1]
+		function hsvToRgb(hsv){
+			var {h, s, v} = hsv;
+			var r, g, b;
+
+			var i = Math.floor(h * 6);
+			var f = h * 6 - i;
+			var p = v * (1 - s);
+			var q = v * (1 - f * s);
+			var t = v * (1 - (1 - f) * s);
+
+			switch(i % 6){
+				case 0: r = v, g = t, b = p; break;
+				case 1: r = q, g = v, b = p; break;
+				case 2: r = p, g = v, b = t; break;
+				case 3: r = p, g = q, b = v; break;
+				case 4: r = t, g = p, b = v; break;
+				case 5: r = v, g = p, b = q; break;
+			}
+
+			return {r: r * 255, g: g * 255, b: b * 255};
+		}
+
+		function initSocket() {
+			if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
+				socket = new WebSocket(`ws://192.168.0.26:81`);
+			} else {
+				socket = new WebSocket(`ws://${window.location.hostname}:81`);
+			}
+
+			socket.binaryType = 'arraybuffer';
+			socket.onopen = (e) => {console.log("opened connection");}
+			socket.onclose = (e) => {console.log("closed connection");}
+			socket.onmessage = (e) => {
+				console.log("received message");
+				let data = new Uint8Array(e.data);
+				consol.log(data);
+			}
+		}
+
+		function sendCommandToServer(...args) {
+			if(socket.readyState != WebSocket.OPEN) return;
+			socket.send(Uint8Array.from(args.flat()).buffer);
+		}
+	</script>
+
+	<style>
+		:root {
+			--background-color: #1d1d1f;
+		}
+		html,body {
+			box-sizing: border-box;
+			width:  100%;
+			height: 100%;
+			margin: 0%;
+			padding: 0%;
+			background-color: var(--background-color);
+			cursor: default;
+		}
+		*, *:before, *:after {
+			box-sizing: inherit;
+		}
+
+		#color-picker-container {
+			position: relative;
+			top: 50px; left: 100px;
+			width: 200px;
+			--hue: #F00;
+			--hue-sat: #F88;
+			--hue-sat-val: #AAA;
+		}
+
+		/* TODO: finish moving the sizings into variables */
+		#dial-container {
+			user-select: none;
+			position: relative;
+			width: 100%;
+			padding-top: 100%;
+			--ring-thickness: 5%;
+			--indicator-size: 40%;
+		}
+		#dial-ring {
+			position: absolute;
+			top: 0; left: 0;
+			width: 100%; height: 100%;
+			border-radius: 50%;
+			background: conic-gradient(#F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00);
+		}
+		/* wish this could be done with borders, but borders don't support percentages :( */
+		#dial-ring::after {
+			content: '';
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: calc(100% - var(--ring-thickness)*2);
+			height: calc(100% - var(--ring-thickness)*2);
+			border-radius: 50%;
+			background: var(--background-color);
+		}
+		#dial-indicator {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: var(--indicator-size);
+			height: var(--indicator-size);
+			border-radius: 50%;
+			background: var(--hue-sat);
+		}
+		#dial-cursor {
+			position: absolute;
+			top: calc(var(--ring-thickness)/2);
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 18%; height: 18%;
+			border-radius: 50%;
+			border-style: solid;
+			border-color: var(--background-color);
+			background: var(--hue);
+		}
+
+		#sat-slider-container {
+			user-select: none;
+			position: relative;
+			width: 100%;
+			margin-top: 20px;
+		}
+		#sat-slider-container::before {
+			content: "";
+			display: block;
+			padding-top: 15%;
+		}
+		#sat-slider-bar {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: 100%; height: calc(100% / 3);
+			border-radius: 1vw;
+			background: linear-gradient(90deg, #FFF, var(--hue));
+		}
+		#sat-slider-cursor {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: 15%; height: 100%;
+			border-radius: 50%;
+			border-style: solid;
+			border-color: var(--background-color);
+			background: var(--hue-sat);
+		}
+
+		#val-slider-container {
+			user-select: none;
+			position: relative;
+			width: 100%;
+			margin-top: 20px;
+		}
+		#val-slider-container::before {
+			content: "";
+			display: block;
+			padding-top: 15%;
+		}
+		#val-slider-bar {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: 100%; height: calc(100% / 3);
+			border-radius: 1vw;
+			background: linear-gradient(90deg, #000, var(--hue-sat));
+		}
+		#val-slider-cursor {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: 15%; height: 100%;
+			border-radius: 50%;
+			border-style: solid;
+			border-color: var(--background-color);
+			background: var(--hue-sat-val);
+		}
+	</style>
+</head>
+<body onload="init()">
+	<div id="color-picker-container">
+		<div id="dial-container">
+			<div id="dial-ring"></div>
+			<div id="dial-indicator"></div>
+			<div id="dial-cursor"></div>
+		</div>
+
+		<!-- TODO: nuke this duplication from orbit -->
+		<div id="sat-slider-container">
+			<div id="sat-slider-bar"></div>
+			<div id="sat-slider-cursor"></div>
+		</div>
+
+		<div id="val-slider-container">
+			<div id="val-slider-bar"></div>
+			<div id="val-slider-cursor"></div>
+		</div>
+	</div>
+</body>
+</html>
