@@ -39,9 +39,9 @@
 				this.satContainer = this.pickerElement.getElementsByClassName("slider-container sat")[0];
 				this.valContainer = this.pickerElement.getElementsByClassName("slider-container val")[0];
 				
-				dragBootstrap(this.hueContainer, this.hueDialDrag.bind(this));
-				dragBootstrap(this.satContainer, this.satSliderDrag.bind(this));
-				dragBootstrap(this.valContainer, this.valSliderDrag.bind(this));
+				ColorPicker.dragBootstrap(this.hueContainer, this.hueDialDrag.bind(this));
+				ColorPicker.dragBootstrap(this.satContainer, this.satSliderDrag.bind(this));
+				ColorPicker.dragBootstrap(this.valContainer, this.valSliderDrag.bind(this));
 			}
 
 			static initAll(){
@@ -56,21 +56,21 @@
 				let yTarget = e.pageY - rect.y - rect.height/2;
 				let t = Math.atan2(yTarget, xTarget);
 
-				let hue = rangeMap(t, -Math.PI, Math.PI, 0, 1, -Math.PI/2);
+				let hue = ColorPicker.rangeMap(t, -Math.PI, Math.PI, 0, 1, -Math.PI/2);
 				this.updateColor(hue, null, null);
 			}
 
 			satSliderDrag(e) {
 				let rect = this.satContainer.getBoundingClientRect();
 				let x = Math.max(0, Math.min(e.pageX - rect.x, rect.width));
-				let sat = rangeMap(x, 0, rect.width, 0, 1);
+				let sat = ColorPicker.rangeMap(x, 0, rect.width, 0, 1);
 				this.updateColor(null, sat, null);
 			}
 
 			valSliderDrag(e) {
 				let rect = this.valContainer.getBoundingClientRect();
 				let x = Math.max(0, Math.min(e.pageX - rect.x, rect.width));
-				let val = rangeMap(x, 0, rect.width, 0, 1);
+				let val = ColorPicker.rangeMap(x, 0, rect.width, 0, 1);
 				this.updateColor(null, null, val);
 			}
 
@@ -84,63 +84,89 @@
 				this.pickerElement.style.setProperty("--hsv-v", this.hsv.v);
 
 				let r, g, b;
-				[r, g, b] = hsvToRgb(this.hsv.h, 1, 1);
+				[r, g, b] = ColorPicker.hsvToRgb(this.hsv.h, 1, 1);
 				this.pickerElement.style.setProperty("--rgb-h", `rgb(${r}, ${g}, ${b})`);
-				[r, g, b] = hsvToRgb(this.hsv.h, this.hsv.s, 1);
+				[r, g, b] = ColorPicker.hsvToRgb(this.hsv.h, this.hsv.s, 1);
 				this.pickerElement.style.setProperty("--rgb-hs", `rgb(${r}, ${g}, ${b})`);
-				[r, g, b] = hsvToRgb(this.hsv.h, this.hsv.s, this.hsv.v);
+				[r, g, b] = ColorPicker.hsvToRgb(this.hsv.h, this.hsv.s, this.hsv.v);
 				this.pickerElement.style.setProperty("--rgb-hsv", `rgb(${r}, ${g}, ${b})`);
 
 				this.callback(this.hsv);
 			}
-		}
-
-		function dragBootstrap(element, handler) {
-			element.addEventListener("mousedown", (e) => {
-				document.addEventListener("mousemove", handler);
-				document.addEventListener("mouseup", function () {
-					document.removeEventListener("mousemove", handler)
-				}, {once: true});
-				handler(e);
-			})
-		}
-
-		function rangeMap(val, inMin, inMax, outMin, outMax, inOffset = 0) {
-			let inSpan = inMax - inMin;
-			let outSpan = outMax - outMin;
-
-			val += inOffset;
-			if(val < inMin) val += inSpan;
-			if(val > inMax) val -= inSpan;
-
-			val -= inMin;
-			val *= outSpan/inSpan;
-			val += outMin;
-
-			return val;
-		}
-
-		// https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
-		// h, s, v ∈ [0, 1]
-		function hsvToRgb(h, s, v){
-			var r, g, b;
-
-			var i = Math.floor(h * 6);
-			var f = h * 6 - i;
-			var p = v * (1 - s);
-			var q = v * (1 - f * s);
-			var t = v * (1 - (1 - f) * s);
-
-			switch(i % 6){
-				case 0: r = v, g = t, b = p; break;
-				case 1: r = q, g = v, b = p; break;
-				case 2: r = p, g = v, b = t; break;
-				case 3: r = p, g = q, b = v; break;
-				case 4: r = t, g = p, b = v; break;
-				case 5: r = v, g = p, b = q; break;
+			
+			static dragBootstrap(element, handler) {
+				element.addEventListener("mousedown", (e) => {
+					document.addEventListener("mousemove", handler);
+					document.addEventListener("mouseup", function () {
+						document.removeEventListener("mousemove", handler)
+					}, {once: true});
+					handler(e);
+				})
 			}
 
-			return [r * 255, g * 255, b * 255];
+			static rangeMap(val, inMin, inMax, outMin, outMax, inOffset = 0) {
+				let inSpan = inMax - inMin;
+				let outSpan = outMax - outMin;
+
+				val += inOffset;
+				if(val < inMin) val += inSpan;
+				if(val > inMax) val -= inSpan;
+
+				val -= inMin;
+				val *= outSpan/inSpan;
+				val += outMin;
+
+				return val;
+			}
+
+			// https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
+			// h, s, v ∈ [0, 1]
+			static hsvToRgb(h, s, v){
+				var r, g, b;
+
+				var i = Math.floor(h * 6);
+				var f = h * 6 - i;
+				var p = v * (1 - s);
+				var q = v * (1 - f * s);
+				var t = v * (1 - (1 - f) * s);
+
+				switch(i % 6){
+					case 0: r = v, g = t, b = p; break;
+					case 1: r = q, g = v, b = p; break;
+					case 2: r = p, g = v, b = t; break;
+					case 3: r = p, g = q, b = v; break;
+					case 4: r = t, g = p, b = v; break;
+					case 5: r = v, g = p, b = q; break;
+				}
+
+				return [r * 255, g * 255, b * 255];
+			}
+		}
+
+		class Controller {
+			static socket;
+
+			initSocket() {
+				if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
+					socket = new WebSocket(`ws://192.168.0.1:81`);
+				} else {
+					socket = new WebSocket(`ws://${window.location.hostname}:81`);
+				}
+
+				socket.binaryType = 'arraybuffer';
+				socket.onopen = (e) => {console.log("opened connection");}
+				socket.onclose = (e) => {console.log("closed connection");}
+				socket.onmessage = (e) => {
+					console.log("received message");
+					let data = new Uint8Array(e.data);
+					consol.log(data);
+				}
+			}
+
+			sendCommandToServer(...args) {
+				if(socket.readyState != WebSocket.OPEN) return;
+				socket.send(Uint8Array.from(args.flat()).buffer);
+			}
 		}
 
 		function onColorChange(hsv) {
@@ -286,8 +312,6 @@
 	</style>
 </head>
 <body>
-	<div class="color-picker" listener="onColorChange"></div>
-	<div class="color-picker" listener="onColorChange"></div>
 	<div class="color-picker" listener="onColorChange"></div>
 </body>
 </html>
