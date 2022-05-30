@@ -144,7 +144,29 @@
 		}
 
 		class Controller {
+			static socket;
 
+			initSocket() {
+				if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
+					socket = new WebSocket(`ws://192.168.0.1:81`);
+				} else {
+					socket = new WebSocket(`ws://${window.location.hostname}:81`);
+				}
+
+				socket.binaryType = 'arraybuffer';
+				socket.onopen = (e) => {console.log("opened connection");}
+				socket.onclose = (e) => {console.log("closed connection");}
+				socket.onmessage = (e) => {
+					console.log("received message");
+					let data = new Uint8Array(e.data);
+					consol.log(data);
+				}
+			}
+
+			sendCommandToServer(...args) {
+				if(socket.readyState != WebSocket.OPEN) return;
+				socket.send(Uint8Array.from(args.flat()).buffer);
+			}
 		}
 
 		function onColorChange(hsv) {
@@ -290,8 +312,6 @@
 	</style>
 </head>
 <body>
-	<div class="color-picker" listener="onColorChange"></div>
-	<div class="color-picker" listener="onColorChange"></div>
 	<div class="color-picker" listener="onColorChange"></div>
 </body>
 </html>
