@@ -8,6 +8,7 @@
 	<script>
 		function init() {
 			ColorPicker.initAll();
+			PaletteSelector.initAll();
 		}
 
 		class ColorPicker {
@@ -143,6 +144,43 @@
 			}
 		}
 
+		class PaletteSelector {
+			active = 0;
+			size = 3;
+			paletteElement;
+			callback;
+
+			constructor(element) {
+				// Is there an elegant to inflate this with an arbitrary number
+				// of palette divs including unique indicies?
+				element.insertAdjacentHTML("afterbegin",
+				`<div class="decrease"></div>
+				<div class="palette" index="0">Testing</div>
+				<div class="palette" index="1">one</div>
+				<div class="palette" index="2">two</div>
+				<div class="palette" index="3">three</div>
+				<div class="palette" index="4">four</div>
+				<div class="increase"></div>`
+				);
+				this.paletteElement = element;
+				this.callback = window[element.getAttribute("listener")];
+
+				Array.from(element.getElementsByClassName("palette")).forEach( element => {
+					element.addEventListener("mousedown", this.paletteSelect.bind(this));
+				});
+			}
+
+			paletteSelect(e) {
+				this.callback.onIndexChange(e.target.getAttribute("index"));
+			}
+
+			static initAll(){
+				Array.from(document.getElementsByClassName("palette-selector")).forEach(element => {
+					new PaletteSelector(element);
+				});
+			}
+		}
+
 		class Controller {
 			static socket;
 
@@ -169,6 +207,15 @@
 			}
 		}
 
+		paletteListener = {
+			onIndexChange(index) {
+				console.log(`index: ${index}`);
+			},
+			onCountChange(count) {
+				console.log(`count: ${count}`)
+			}
+		}
+		
 		function onColorChange(hsv) {
 			console.log(hsv);
 		}
@@ -312,6 +359,7 @@
 	</style>
 </head>
 <body>
+	<div class="palette-selector" listener="paletteListener"></div>
 	<div class="color-picker" listener="onColorChange"></div>
 </body>
 </html>
