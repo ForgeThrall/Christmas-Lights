@@ -155,13 +155,13 @@
 				// of palette divs including unique indicies?
 				element.insertAdjacentHTML("afterbegin",
 				`<div class="palette-container">
-					<div class="palette-element decrease"></div>
-					<div class="palette-element palette" index="0"></div>
-					<div class="palette-element palette" index="1"></div>
-					<div class="palette-element palette" index="2"></div>
-					<div class="palette-element palette" index="3"></div>
-					<div class="palette-element palette" index="4"></div>
-				<div class="palette-element increase"></div>
+					<div class="palette-decrease"></div>
+					<div class="palette-entry" index="0"></div>
+					<div class="palette-entry" index="1"></div>
+					<div class="palette-entry" index="2"></div>
+					<div class="palette-entry" index="3"></div>
+					<div class="palette-entry" index="4"></div>
+					<div class="palette-increase"></div>
 				</div>`
 				);
 				this.paletteElement = element;
@@ -177,7 +177,7 @@
 			}
 
 			static initAll(){
-				Array.from(document.getElementsByClassName("palette-selector")).forEach(element => {
+				Array.from(document.getElementsByClassName("palette-picker")).forEach(element => {
 					new PaletteSelector(element);
 				});
 			}
@@ -236,12 +236,7 @@
 			cursor: default;
 		}
 
-		.color-picker {
-			width: 200px;
-			margin-left: 100px;
-			margin-top: 20px;
-		}
-
+		
 		.color-picker {
 			--background-color: #1d1d1f;
 			/* in percents of dial diameter */
@@ -263,6 +258,12 @@
 		.color-picker *::after {
 			user-select: none;
 			box-sizing: border-box;
+		}
+
+		.color-picker {
+			width: 200px;
+			margin-left: 100px;
+			margin-top: 20px;
 		}
 
 		.dial-container {
@@ -358,16 +359,22 @@
 			background: var(--rgb-hsv);
 		}
 
-		.palette-selector {
+		
+		.palette-picker {
+			--active-entry: 1;
+			--entry-count: 5;
+		}
+
+		.palette-picker {
 			position: relative;
 			width: 200px;
 			margin-left: 100px;
 			margin-top: 50px;
 		}
 
-		.palette-selector,
-		.palette-selector *,
-		.palette-selector *::after {
+		.palette-picker,
+		.palette-picker *,
+		.palette-picker *::after {
 			user-select: none;
 			box-sizing: border-box;
 		}
@@ -378,22 +385,22 @@
 			padding-top: 15%;
 		}
 
-		.palette-element {
+		.palette-entry,
+		.palette-entry::after,
+		.palette-decrease,
+		.palette-increase {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
-			
-			background: dimgrey;
 			border-radius: 50%;
+		}
+
+		.palette-entry {
+			background: dimgrey;
 			height: 100%;
 			width: 15%;
 		}
-		.palette-element::after {
-			position: absolute;
-			top: 50%; left: 50%;
-			transform: translate(-50%, -50%);
-			border-radius: 50%;
-
+		.palette-entry::after {
 			content: '';
 			width: 80%; height: 80%;
 			background: red;
@@ -402,7 +409,7 @@
 	</style>
 </head>
 <body>
-	<div class="palette-selector" listener="paletteListener"></div>
+	<div class="palette-picker" listener="paletteListener"></div>
 	<div class="color-picker" listener="onColorChange"></div>
 </body>
 </html>
