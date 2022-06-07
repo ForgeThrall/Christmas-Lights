@@ -154,13 +154,15 @@
 				// Is there an elegant to inflate this with an arbitrary number
 				// of palette divs including unique indicies?
 				element.insertAdjacentHTML("afterbegin",
-				`<div class="decrease"></div>
-				<div class="palette" index="0">Testing</div>
-				<div class="palette" index="1">one</div>
-				<div class="palette" index="2">two</div>
-				<div class="palette" index="3">three</div>
-				<div class="palette" index="4">four</div>
-				<div class="increase"></div>`
+				`<div class="palette-container">
+					<div class="palette-element decrease"></div>
+					<div class="palette-element palette" index="0"></div>
+					<div class="palette-element palette" index="1"></div>
+					<div class="palette-element palette" index="2"></div>
+					<div class="palette-element palette" index="3"></div>
+					<div class="palette-element palette" index="4"></div>
+				<div class="palette-element increase"></div>
+				</div>`
 				);
 				this.paletteElement = element;
 				this.callback = window[element.getAttribute("listener")];
@@ -235,10 +237,9 @@
 		}
 
 		.color-picker {
-			display: inline-block;
 			width: 200px;
 			margin-left: 100px;
-			margin-top: 50px;
+			margin-top: 20px;
 		}
 
 		.color-picker {
@@ -356,6 +357,48 @@
 			width: 80%; height: 80%;
 			background: var(--rgb-hsv);
 		}
+
+		.palette-selector {
+			position: relative;
+			width: 200px;
+			margin-left: 100px;
+			margin-top: 50px;
+		}
+
+		.palette-selector,
+		.palette-selector *,
+		.palette-selector *::after {
+			user-select: none;
+			box-sizing: border-box;
+		}
+
+		.palette-container {
+			position: relative;
+			width: 100%;
+			padding-top: 15%;
+		}
+
+		.palette-element {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			
+			background: dimgrey;
+			border-radius: 50%;
+			height: 100%;
+			width: 15%;
+		}
+		.palette-element::after {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			border-radius: 50%;
+
+			content: '';
+			width: 80%; height: 80%;
+			background: red;
+		}
+
 	</style>
 </head>
 <body>
