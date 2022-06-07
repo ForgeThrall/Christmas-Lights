@@ -156,11 +156,11 @@
 				element.insertAdjacentHTML("afterbegin",
 				`<div class="palette-container">
 					<div class="palette-decrease"></div>
-					<div class="palette-entry" index="0"></div>
-					<div class="palette-entry" index="1"></div>
-					<div class="palette-entry" index="2"></div>
-					<div class="palette-entry" index="3"></div>
-					<div class="palette-entry" index="4"></div>
+					<div class="palette-entry" index="0" style="--index: 0;"></div>
+					<div class="palette-entry" index="1" style="--index: 1;"></div>
+					<div class="palette-entry" index="2" style="--index: 2;"></div>
+					<div class="palette-entry" index="3" style="--index: 3;"></div>
+					<div class="palette-entry" index="4" style="--index: 4;"></div>
 					<div class="palette-increase"></div>
 				</div>`
 				);
@@ -363,6 +363,8 @@
 		.palette-picker {
 			--active-entry: 1;
 			--entry-count: 5;
+			--button-size: 10;
+			--entry-size: 15;
 		}
 
 		.palette-picker {
@@ -380,27 +382,54 @@
 		}
 
 		.palette-container {
+			background-color: #4c4c4f;
+			border-radius: 8px;
 			position: relative;
 			width: 100%;
-			padding-top: 15%;
+			padding-top: calc(max(var(--button-size), var(--entry-size))*1%);
 		}
 
 		.palette-entry,
-		.palette-entry::after,
-		.palette-decrease,
-		.palette-increase {
+		.palette-entry::after {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
 			border-radius: 50%;
 		}
 
+		.palette-decrease,
+		.palette-increase,
+		.palette-decrease::after,
+		.palette-increase::after {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			border-radius: 15%;
+		}
+
+		.palette-decrease,
+		.palette-increase {
+			background: #4c4c4f;
+			height: calc(var(--button-size)/max(var(--button-size), var(--entry-size))*100%);
+			width: calc(var(--button-size)*1%);
+		}
+
+		.palette-decrease {
+			left: 0%;
+		}
+		.palette-increase {
+			left: 100%;
+		}
+
 		.palette-entry {
-			background: dimgrey;
+			left: calc((((100 - var(--button-size) + var(--entry-size))/(var(--entry-count) + 1))*(var(--index) + 1) + var(--button-size)/2 - var(--entry-size)/2)*1%);
+			background: #4c4c4f;
 			height: 100%;
 			width: 15%;
 		}
-		.palette-entry::after {
+		.palette-entry::after,
+		.palette-decrease::after,
+		.palette-increase::after {
 			content: '';
 			width: 80%; height: 80%;
 			background: red;
