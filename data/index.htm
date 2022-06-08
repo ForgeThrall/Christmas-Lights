@@ -162,6 +162,7 @@
 					<div class="palette-entry" index="3" style="--index: 3;"></div>
 					<div class="palette-entry" index="4" style="--index: 4;"></div>
 					<div class="palette-increase"></div>
+					<div class="palette-indicator"></div>
 				</div>`
 				);
 				this.paletteElement = element;
@@ -263,7 +264,7 @@
 		.color-picker {
 			width: 200px;
 			margin-left: 100px;
-			margin-top: 20px;
+			margin-top: 25px;
 		}
 
 		.dial-container {
@@ -361,7 +362,7 @@
 
 		
 		.palette-picker {
-			--active-entry: 1;
+			--active-entry: 0;
 			--entry-count: 5;
 			--button-size: 10;
 			--entry-size: 15;
@@ -390,7 +391,8 @@
 		}
 
 		.palette-entry,
-		.palette-entry::after {
+		.palette-entry::after,
+		.palette-indicator {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
@@ -423,7 +425,7 @@
 
 		.palette-entry {
 			left: calc((((100 - var(--button-size) + var(--entry-size))/(var(--entry-count) + 1))*(var(--index) + 1) + var(--button-size)/2 - var(--entry-size)/2)*1%);
-			background: #4c4c4f;
+			/* background: #4c4c4f; */
 			height: 100%;
 			width: 15%;
 		}
@@ -433,6 +435,15 @@
 			content: '';
 			width: 80%; height: 80%;
 			background: red;
+		}
+
+		.palette-indicator {
+			left: calc((((100 - var(--button-size) + var(--entry-size))/(var(--entry-count) + 1))*(var(--active-entry) + 1) + var(--button-size)/2 - var(--entry-size)/2)*1%);
+			background: white;
+			border-radius: 8px;
+			width: calc(var(--entry-size)*.9*1%);
+			height: 20%;
+			top: 120%;
 		}
 
 	</style>
