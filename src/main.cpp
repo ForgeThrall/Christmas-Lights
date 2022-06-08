@@ -16,7 +16,7 @@
 
 // lights
 #define DATA_PIN 13
-#define NUM_LEDS 150
+#define NUM_LEDS 10
 #define MAX_BRIGHTNESS 20 // out of ?
 #define FPS 60
 
@@ -27,13 +27,31 @@ websockets::WebsocketsClient socketClient;
 
 enum API{
   COLOR = 100,
+  PATTERN,
 };
 
 // lights
 CRGB leds[NUM_LEDS];
 byte currentPattern = 0;
 byte sequenceLength = 1;
-CRGB sequencePallet[] = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x390F14};
+CRGB colorPallet[] = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x390F14};
+
+// TODO: split networking and lights into their own files. Getting messy
+void sinelon() {
+  // a colored dot sweeping back and forth, with fading trails
+  fadeToBlackBy(leds, NUM_LEDS, 20);
+  int pos = beatsin16( 13, 0, NUM_LEDS - 1 );
+  leds[pos] += CHSV(128, 255, 192);
+}
+
+void checkered() {
+  for(int i = 0; i < NUM_LEDS; i++){
+    leds[i] = colorPallet[i%5];
+  }
+}
+
+void (*patterns[])() = {checkered, sinelon};
+const byte patternsCount = sizeof(patterns) / sizeof((patterns)[0]);
 
 //networking
 void initWifi() {
@@ -69,10 +87,17 @@ void messageCallback(websockets::WebsocketsMessage msg){
 
     switch(message[0]){
       case COLOR:
+        Serial.print("Color: ");
         for(int i = 1; i < message.size(); i++){
           Serial.printf("%02x ", message[i]);
         }
         Serial.println();
+        break;
+      case PATTERN:
+        if(message.size() > 1 && message[1] < patternsCount){
+          currentPattern = message[1];
+          Serial.printf("Pattern: %d", message[1]);
+        }
         break;
       default:
         Serial.println("Unknown");
@@ -92,15 +117,6 @@ void pollWebServices() {
   webServer.handleClient();
 }
 
-// lights
-void sinelon() {
-  // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy(leds, NUM_LEDS, 20);
-  int pos = beatsin16( 13, 0, NUM_LEDS - 1 );
-  leds[pos] += CHSV(128, 255, 192);
-}
-
-// Run
 void setup() {
   Serial.begin(115200);
 
@@ -114,14 +130,14 @@ void setup() {
   initWebServices();
   webServer.begin();
 
-	// FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, 250).setCorrection(TypicalPixelString);
-	// FastLED.setBrightness(MAX_BRIGHTNESS);
+  FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, 250).setCorrection(TypicalPixelString);
+  FastLED.setBrightness(MAX_BRIGHTNESS);
 }
 
 void loop() {
-  // EVERY_N_MILLISECONDS(1000 / FPS){
-	// 	sinelon();
-	// 	FastLED.show();
-	// }
+  EVERY_N_MILLISECONDS(1000 / FPS){
+  	patterns[currentPattern]();
+  	FastLED.show();
+  }
   pollWebServices();
 }
