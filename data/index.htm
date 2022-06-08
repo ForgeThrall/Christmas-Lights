@@ -292,22 +292,22 @@
 		}
 		.dial-ring::before {
 			content: '';
-			width: calc(100% - var(--line-thickness)*2*1%);
-			height: calc(100% - var(--line-thickness)*2*1%);
+			width: calc(100% - var(--line-thickness) * 2 * 1%);
+			height: calc(100% - var(--line-thickness) * 2 * 1%);
 			background: var(--background-color);
 		}
 		.dial-ring::after {
 			content: '';
-			width: calc(var(--indicator-size)*1%);
-			height: calc(var(--indicator-size)*1%);
+			width: calc(var(--indicator-size) * 1%);
+			height: calc(var(--indicator-size) * 1%);
 			background: var(--rgb-hs);
 		}
 		.dial-cursor {
 			transform: translate(-50%, -50%)
 				rotate(calc(var(--hsv-h) * 360deg))
-				translateY(calc(-100% * ((50 - var(--line-thickness)/2)/var(--dial-cursor-size))));
-			width: calc(var(--dial-cursor-size)*1%);
-			height: calc(var(--dial-cursor-size)*1%);
+				translateY(calc(-100% * ((50 - var(--line-thickness) / 2) / var(--dial-cursor-size))));
+			width: calc(var(--dial-cursor-size) * 1%);
+			height: calc(var(--dial-cursor-size) * 1%);
 			background: var(--background-color);
 		}
 		.dial-cursor::after {
@@ -320,18 +320,18 @@
 			position: relative;
 			width: 100%;
 			margin-top: 20px;
-			padding-top: calc(var(--slider-cursor-size)*1%);
+			padding-top: calc(var(--slider-cursor-size) * 1%);
 		}
 		.slider-bar {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
 			width: 100%;
-			height: calc(100%*var(--line-thickness)/var(--slider-cursor-size));
+			height: calc(100% * var(--line-thickness) / var(--slider-cursor-size));
 			border-radius: 10000px;
 		}
 		.slider-cursor {
-			width: calc(var(--slider-cursor-size)*1%);
+			width: calc(var(--slider-cursor-size) * 1%);
 			background: var(--background-color);
 			height: 100%;
 		}
@@ -364,7 +364,7 @@
 		.palette-picker {
 			--active-entry: 0;
 			--entry-count: 5;
-			--button-size: 10;
+			--button-size: 12;
 			--entry-size: 15;
 		}
 
@@ -387,7 +387,7 @@
 			border-radius: 8px;
 			position: relative;
 			width: 100%;
-			padding-top: calc(max(var(--button-size), var(--entry-size))*1%);
+			padding-top: calc(var(--entry-size) * 1%);
 		}
 
 		.palette-entry,
@@ -412,8 +412,8 @@
 		.palette-decrease,
 		.palette-increase {
 			background: #4c4c4f;
-			height: calc(var(--button-size)/max(var(--button-size), var(--entry-size))*100%);
-			width: calc(var(--button-size)*1%);
+			height: calc(var(--button-size) / var(--entry-size) * 100%);
+			width: calc(var(--button-size) * 1%);
 		}
 
 		.palette-decrease {
@@ -424,10 +424,9 @@
 		}
 
 		.palette-entry {
-			left: calc((((100 - var(--button-size) + var(--entry-size))/(var(--entry-count) + 1))*(var(--index) + 1) + var(--button-size)/2 - var(--entry-size)/2)*1%);
-			/* background: #4c4c4f; */
+			left: calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--index) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%);
 			height: 100%;
-			width: 15%;
+			width: calc(var(--entry-size) * 1%);
 		}
 		.palette-entry::after,
 		.palette-decrease::after,
@@ -438,10 +437,10 @@
 		}
 
 		.palette-indicator {
-			left: calc((((100 - var(--button-size) + var(--entry-size))/(var(--entry-count) + 1))*(var(--active-entry) + 1) + var(--button-size)/2 - var(--entry-size)/2)*1%);
+			left: calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--active-entry) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%);
 			background: white;
 			border-radius: 8px;
-			width: calc(var(--entry-size)*.9*1%);
+			width: calc(var(--entry-size) * .9 * 1%);
 			height: 20%;
 			top: 120%;
 		}
