@@ -7,11 +7,12 @@
 #include <SPIFFS.h>
 
 // networking
-#define NETWORK_SSID "SSID"
-#define NETWORK_PASS "PASS"
+#define NETWORK_SSID "Lights"
+#define NETWORK_PASS "PASSWORD"
 #define WEB_PORT    80
 #define SOCKET_PORT 81
 #define DOMAIN_NAME "lights"
+#define LOCAL_IP IPAddress(1,2,3,4)
 
 // lights
 #define DATA_PIN 13
@@ -36,18 +37,9 @@ CRGB sequencePallet[] = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x390F14};
 
 //networking
 void initWifi() {
-  WiFi.begin(NETWORK_SSID, NETWORK_PASS);
-
-  Serial.print("Connecting to WiFi");
-  while(WiFi.status() != WL_CONNECTED) {
-      Serial.print(".");
-      delay(1000);
-  }
-  Serial.println();
-
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(NETWORK_SSID, NETWORK_PASS);
+  WiFi.softAPConfig(LOCAL_IP, LOCAL_IP, IPAddress(255, 255, 255, 0));
 }
 
 void initMDNS() {
@@ -122,14 +114,14 @@ void setup() {
   initWebServices();
   webServer.begin();
 
-	FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, 250).setCorrection(TypicalPixelString);
-	FastLED.setBrightness(MAX_BRIGHTNESS);
+	// FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, 250).setCorrection(TypicalPixelString);
+	// FastLED.setBrightness(MAX_BRIGHTNESS);
 }
 
 void loop() {
-  EVERY_N_MILLISECONDS(1000 / FPS){
-		sinelon();
-		FastLED.show();
-	}
+  // EVERY_N_MILLISECONDS(1000 / FPS){
+	// 	sinelon();
+	// 	FastLED.show();
+	// }
   pollWebServices();
 }
