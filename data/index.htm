@@ -8,7 +8,7 @@
 	<script>
 		function init() {
 			ColorPicker.initAll();
-			PaletteSelector.initAll();
+			PalettePicker.initAll();
 		}
 
 		class ColorPicker {
@@ -144,9 +144,9 @@
 			}
 		}
 
-		class PaletteSelector {
+		class PalettePicker {
 			active = 0;
-			size = 3;
+			size = 5;
 			paletteElement;
 			callback;
 
@@ -168,18 +168,36 @@
 				this.paletteElement = element;
 				this.callback = window[element.getAttribute("listener")];
 
-				Array.from(element.getElementsByClassName("palette")).forEach( element => {
+				Array.from(element.getElementsByClassName("palette-entry")).forEach( element => {
 					element.addEventListener("mousedown", this.paletteSelect.bind(this));
 				});
+				element.getElementsByClassName("palette-decrease")[0].addEventListener("mousedown", this.paletteDecrease.bind(this));
+				element.getElementsByClassName("palette-increase")[0].addEventListener("mousedown", this.paletteIncrease.bind(this));
 			}
 
 			paletteSelect(e) {
-				this.callback.onIndexChange(e.target.getAttribute("index"));
+				let newActive = e.target.getAttribute("index");
+				if(newActive === this.active) return;
+				this.active = newActive;
+				this.paletteElement.style.setProperty("--active-entry", this.active);
+				this.callback.onIndexChange(this.active);
+			}
+
+			paletteDecrease(e) {
+				if(this.size < 2) return;
+				this.size--;
+				this.callback.onCountChange(this.size);
+			}
+
+			paletteIncrease(e) {
+				if(this.size > 4) return;
+				this.size++;
+				this.callback.onCountChange(this.size);
 			}
 
 			static initAll(){
 				Array.from(document.getElementsByClassName("palette-picker")).forEach(element => {
-					new PaletteSelector(element);
+					new PalettePicker(element);
 				});
 			}
 		}
