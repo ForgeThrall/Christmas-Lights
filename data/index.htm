@@ -145,26 +145,28 @@
 		}
 
 		class PalettePicker {
-			active = 0;
 			size = 5;
+			palette = [];
+			activeEntry = 0;
 			paletteElement;
 			callback;
 
 			constructor(element) {
-				// Is there an elegant to inflate this with an arbitrary number
-				// of palette divs including unique indicies?
-				element.insertAdjacentHTML("afterbegin",
-				`<div class="palette-container">
-					<div class="palette-decrease"></div>
-					<div class="palette-entry" index="0" style="--index: 0;"></div>
-					<div class="palette-entry" index="1" style="--index: 1;"></div>
-					<div class="palette-entry" index="2" style="--index: 2;"></div>
-					<div class="palette-entry" index="3" style="--index: 3;"></div>
-					<div class="palette-entry" index="4" style="--index: 4;"></div>
+				let HTMLinsert = `<div class="palette-container">`;
+				for(let i = 0; i < this.size; i++){
+					let h = 0, s = .5, v = .5;
+					let r, g, b;
+					// TODO: break out these color utilities
+					[r, g, b] = ColorPicker.hsvToRgb(h, s, 1);
+					this.palette[i] = {h: h, s: s, v: v};
+					HTMLinsert += `<div class="palette-entry" index="${i}" style="--index: ${i}; --entry-color: rgb(${r}, ${g}, ${b})"></div>`;
+				}
+				HTMLinsert += `<div class="palette-decrease"></div>
 					<div class="palette-increase"></div>
 					<div class="palette-indicator"></div>
-				</div>`
-				);
+					</div>`
+				element.insertAdjacentHTML("afterbegin", HTMLinsert);
+
 				this.paletteElement = element;
 				this.callback = window[element.getAttribute("listener")];
 
@@ -177,10 +179,10 @@
 
 			paletteSelect(e) {
 				let newActive = e.target.getAttribute("index");
-				if(newActive === this.active) return;
-				this.active = newActive;
-				this.paletteElement.style.setProperty("--active-entry", this.active);
-				this.callback.onIndexChange(this.active);
+				if(newActive === this.activeEntry) return;
+				this.activeEntry = newActive;
+				this.paletteElement.style.setProperty("--active-entry", this.activeEntry);
+				this.callback.onIndexChange(this.activeEntry);
 			}
 
 			paletteDecrease(e) {
@@ -441,17 +443,22 @@
 			left: 100%;
 		}
 
+		.palette-decrease::after,
+		.palette-increase::after {
+			content: '';
+			width: 80%; height: 80%;
+			background: cornflowerblue;
+		}
+
 		.palette-entry {
 			left: calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--index) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%);
 			height: 100%;
 			width: calc(var(--entry-size) * 1%);
 		}
-		.palette-entry::after,
-		.palette-decrease::after,
-		.palette-increase::after {
+		.palette-entry::after {
 			content: '';
 			width: 80%; height: 80%;
-			background: red;
+			background: var(--entry-color);
 		}
 
 		.palette-indicator {
