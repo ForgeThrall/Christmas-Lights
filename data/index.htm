@@ -69,24 +69,24 @@
 				let t = Math.atan2(yTarget, xTarget);
 
 				let hue = ColorPicker.rangeMap(t, -Math.PI, Math.PI, 0, 1, -Math.PI/2);
-				this.updateColor(hue, null, null);
+				this.setcolor(hue, null, null);
 			}
 
 			satSliderDrag(e) {
 				let rect = this.satContainer.getBoundingClientRect();
 				let x = Math.max(0, Math.min(e.pageX - rect.x, rect.width));
 				let sat = ColorPicker.rangeMap(x, 0, rect.width, 0, 1);
-				this.updateColor(null, sat, null);
+				this.setcolor(null, sat, null);
 			}
 
 			valSliderDrag(e) {
 				let rect = this.valContainer.getBoundingClientRect();
 				let x = Math.max(0, Math.min(e.pageX - rect.x, rect.width));
 				let val = ColorPicker.rangeMap(x, 0, rect.width, 0, 1);
-				this.updateColor(null, null, val);
+				this.setcolor(null, null, val);
 			}
 
-			updateColor(h, s, v) {
+			setcolor(h, s, v, triggerUpdate = true) {
 				this.hsv.h = h ?? this.hsv.h;
 				this.hsv.s = s ?? this.hsv.s;
 				this.hsv.v = v ?? this.hsv.v;
@@ -103,7 +103,7 @@
 				[r, g, b] = ColorPicker.hsvToRgb(this.hsv.h, this.hsv.s, this.hsv.v);
 				this.pickerElement.style.setProperty("--rgb-hsv", `rgb(${r}, ${g}, ${b})`);
 
-				this.callback.onColorChange(this.hsv);
+				if(triggerUpdate) this.callback.onColorChange(this.hsv);
 			}
 			
 			static dragBootstrap(element, handler) {
@@ -206,20 +206,27 @@
 			paletteDecrease(e) {
 				if(this.size < 2) return;
 				this.size--;
-				this.callback.onCountChange(this.size);
+				this.callback.onSizeChange(this.size);
 			}
 
 			paletteIncrease(e) {
 				if(this.size > 4) return;
 				this.size++;
-				this.callback.onCountChange(this.size);
+				this.callback.onSizeChange(this.size);
 			}
 
-			setColor(hsv, index = this.activeEntry) {
-				let r, g, b;
-				[r, g, b] = ColorPicker.hsvToRgb(hsv.h, hsv.s, 1);
-				this.palette[index] = hsv;
+			setColor(h, s, v, index = this.activeEntry) {
+				let [r, g, b] = ColorPicker.hsvToRgb(h, s, 1);
+				this.palette[index] = {h: h, s: s, v: v};
 				this.entryElements[index].style.setProperty("--entry-color", `rgb(${r}, ${g}, ${b}`);
+			}
+
+			getColor(index = this.activeEntry) {
+				return this.palette[index];
+			}
+
+			getIndex() {
+				return this.activeEntry;
 			}
 
 			static initAll(){
@@ -251,9 +258,10 @@
 
 		paletteListener = {
 			onIndexChange(index) {
-				console.log(`index: ${index}`);
+				let {h, s, v} = palettePicker.getColor();
+				colorPicker.setcolor(h, s, v, false);
 			},
-			onCountChange(count) {
+			onSizeChange(count) {
 				console.log(`count: ${count}`);
 			}
 		}
@@ -261,8 +269,8 @@
 		colorListener = {
 			onColorChange(hsv) {
 				let [r, g, b] = ColorPicker.hsvToRgb(hsv.h, hsv.s, hsv.v).map(e => Math.floor(e));
-				palettePicker.setColor(hsv);
-				sendCommandToServer(API.COLOR, 1, r, g, b);
+				palettePicker.setColor(hsv.h, hsv.s, hsv.v);
+				sendCommandToServer(API.COLOR, palettePicker.getIndex(), r, g, b);
 			}
 		}
 	</script>
