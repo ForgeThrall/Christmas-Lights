@@ -84,14 +84,23 @@ void initWebServices() {
 void messageCallback(websockets::WebsocketsMessage msg){
     Serial.print("Got Message: ");
     std::string message = msg.rawData();
+    if(message.size() == 0){
+      Serial.println("Empty message");
+      return;
+    }
 
     switch(message[0]){
       case COLOR:
+        if(message.size() != 5){
+          Serial.println("Mis-sized color");
+          return;
+        }
         Serial.print("Color: ");
-        for(int i = 1; i < message.size(); i++){
+        for(int i = 2; i < message.size(); i++){
           Serial.printf("%02x ", message[i]);
         }
-        Serial.println();
+        Serial.printf("Index: %d\n", message[1]);
+        colorPallet[(uint8_t)message[1]] = CRGB(message[2], message[3], message[4]);
         break;
       case PATTERN:
         if(message.size() > 1 && message[1] < patternsCount){
@@ -130,7 +139,7 @@ void setup() {
   initWebServices();
   webServer.begin();
 
-  FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, 250).setCorrection(TypicalPixelString);
+  FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, NUM_LEDS).setCorrection(TypicalPixelString);
   FastLED.setBrightness(MAX_BRIGHTNESS);
 }
 

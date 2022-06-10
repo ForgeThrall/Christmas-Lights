@@ -232,11 +232,7 @@
 		}
 
 		function initSocket() {
-			if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
-				socket = new WebSocket(`ws://192.168.0.1:81`);
-			} else {
-				socket = new WebSocket(`ws://1.2.3.4:81`);
-			}
+			socket = new WebSocket(`ws://1.2.3.4:81`);
 
 			socket.binaryType = 'arraybuffer';
 			socket.onopen = (e) => {console.log("opened connection");}
@@ -264,8 +260,9 @@
 
 		colorListener = {
 			onColorChange(hsv) {
+				let [r, g, b] = ColorPicker.hsvToRgb(hsv.h, hsv.s, hsv.v).map(e => Math.floor(e));
 				palettePicker.setColor(hsv);
-				sendCommandToServer(API.COLOR, hsv.h, hsv.s, hsv.v);
+				sendCommandToServer(API.COLOR, 1, r, g, b);
 			}
 		}
 	</script>
