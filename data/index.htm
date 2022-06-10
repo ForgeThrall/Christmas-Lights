@@ -6,9 +6,16 @@
 	<title>Christmas Lights</title>
 	<link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg"/>
 	<script>
+		var socket;
+		const API = {
+			COLOR: 100,
+			PATTERN: 101,
+		}
+
 		function init() {
 			ColorPicker.initAll();
 			PalettePicker.initAll();
+			initSocket();
 		}
 
 		class ColorPicker {
@@ -209,30 +216,26 @@
 			}
 		}
 
-		class Controller {
-			static socket;
-
-			initSocket() {
-				if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
-					socket = new WebSocket(`ws://192.168.0.1:81`);
-				} else {
-					socket = new WebSocket(`ws://${window.location.hostname}:81`);
-				}
-
-				socket.binaryType = 'arraybuffer';
-				socket.onopen = (e) => {console.log("opened connection");}
-				socket.onclose = (e) => {console.log("closed connection");}
-				socket.onmessage = (e) => {
-					console.log("received message");
-					let data = new Uint8Array(e.data);
-					consol.log(data);
-				}
+		function initSocket() {
+			if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
+				socket = new WebSocket(`ws://192.168.0.1:81`);
+			} else {
+				socket = new WebSocket(`ws://1.2.3.4:81`);
 			}
 
-			sendCommandToServer(...args) {
-				if(socket.readyState != WebSocket.OPEN) return;
-				socket.send(Uint8Array.from(args.flat()).buffer);
+			socket.binaryType = 'arraybuffer';
+			socket.onopen = (e) => {console.log("opened connection");}
+			socket.onclose = (e) => {console.log("closed connection");}
+			socket.onmessage = (e) => {
+				console.log("received message");
+				let data = new Uint8Array(e.data);
+				consol.log(data);
 			}
+		}
+
+		function sendCommandToServer(...args) {
+			if(socket.readyState != WebSocket.OPEN) return;
+			socket.send(Uint8Array.from(args.flat()).buffer);
 		}
 
 		paletteListener = {
@@ -243,9 +246,9 @@
 				console.log(`count: ${count}`)
 			}
 		}
-		
+				
 		function onColorChange(hsv) {
-			console.log(hsv);
+			sendCommandToServer(API.COLOR, hsv.h, hsv.s, hsv.v);
 		}
 	</script>
 
