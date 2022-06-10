@@ -14,6 +14,7 @@
 
 		function init() {
 			ColorPicker.initAll();
+			PalettePicker.initAll();
 			initSocket();
 		}
 
@@ -150,6 +151,71 @@
 			}
 		}
 
+		class PalettePicker {
+			size = 5;
+			palette = [];
+			activeEntry = 0;
+			paletteElement;
+			callback;
+
+			constructor(element) {
+				let HTMLinsert = `<div class="palette-container">`;
+				for(let i = 0; i < this.size; i++){
+					let h = 0, s = .5, v = .5;
+					let r, g, b;
+					// TODO: break out these color utilities
+					[r, g, b] = ColorPicker.hsvToRgb(h, s, 1);
+					this.palette[i] = {h: h, s: s, v: v};
+					HTMLinsert += `<div class="palette-entry" index="${i}" style="--index: ${i}; --entry-color: rgb(${r}, ${g}, ${b})"></div>`;
+				}
+				HTMLinsert += `
+					<div class="palette-decrease">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M192 448c-8.188 0-16.38-3.125-22.62-9.375l-160-160c-12.5-12.5-12.5-32.75 0-45.25l160-160c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l137.4 137.4c12.5 12.5 12.5 32.75 0 45.25C208.4 444.9 200.2 448 192 448z"/></svg>
+					</div>
+					<div class="palette-increase">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M64 448c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L178.8 256L41.38 118.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l160 160c12.5 12.5 12.5 32.75 0 45.25l-160 160C80.38 444.9 72.19 448 64 448z"/></svg>
+					</div>
+					<div class="palette-indicator"></div>
+					</div>`
+				element.insertAdjacentHTML("afterbegin", HTMLinsert);
+
+				this.paletteElement = element;
+				this.callback = window[element.getAttribute("listener")];
+
+				Array.from(element.getElementsByClassName("palette-entry")).forEach( element => {
+					element.addEventListener("mousedown", this.paletteSelect.bind(this));
+				});
+				element.getElementsByClassName("palette-decrease")[0].addEventListener("mousedown", this.paletteDecrease.bind(this));
+				element.getElementsByClassName("palette-increase")[0].addEventListener("mousedown", this.paletteIncrease.bind(this));
+			}
+
+			paletteSelect(e) {
+				let newActive = e.target.getAttribute("index");
+				if(newActive === this.activeEntry) return;
+				this.activeEntry = newActive;
+				this.paletteElement.style.setProperty("--active-entry", this.activeEntry);
+				this.callback.onIndexChange(this.activeEntry);
+			}
+
+			paletteDecrease(e) {
+				if(this.size < 2) return;
+				this.size--;
+				this.callback.onCountChange(this.size);
+			}
+
+			paletteIncrease(e) {
+				if(this.size > 4) return;
+				this.size++;
+				this.callback.onCountChange(this.size);
+			}
+
+			static initAll(){
+				Array.from(document.getElementsByClassName("palette-picker")).forEach(element => {
+					new PalettePicker(element);
+				});
+			}
+		}
+
 		function initSocket() {
 			if(["","localhost"].includes(`${window.location.hostname}`)){ // when the webpage is loaded locally for testing
 				socket = new WebSocket(`ws://192.168.0.1:81`);
@@ -172,6 +238,15 @@
 			socket.send(Uint8Array.from(args.flat()).buffer);
 		}
 
+		paletteListener = {
+			onIndexChange(index) {
+				console.log(`index: ${index}`);
+			},
+			onCountChange(count) {
+				console.log(`count: ${count}`)
+			}
+		}
+				
 		function onColorChange(hsv) {
 			sendCommandToServer(API.COLOR, hsv.h, hsv.s, hsv.v);
 		}
@@ -190,13 +265,7 @@
 			cursor: default;
 		}
 
-		.color-picker {
-			display: inline-block;
-			width: 200px;
-			margin-left: 100px;
-			margin-top: 50px;
-		}
-
+		
 		.color-picker {
 			--background-color: #1d1d1f;
 			/* in percents of dial diameter */
@@ -218,6 +287,12 @@
 		.color-picker *::after {
 			user-select: none;
 			box-sizing: border-box;
+		}
+
+		.color-picker {
+			width: 200px;
+			margin-left: 100px;
+			margin-top: 25px;
 		}
 
 		.dial-container {
@@ -245,22 +320,22 @@
 		}
 		.dial-ring::before {
 			content: '';
-			width: calc(100% - var(--line-thickness)*2*1%);
-			height: calc(100% - var(--line-thickness)*2*1%);
+			width: calc(100% - var(--line-thickness) * 2 * 1%);
+			height: calc(100% - var(--line-thickness) * 2 * 1%);
 			background: var(--background-color);
 		}
 		.dial-ring::after {
 			content: '';
-			width: calc(var(--indicator-size)*1%);
-			height: calc(var(--indicator-size)*1%);
+			width: calc(var(--indicator-size) * 1%);
+			height: calc(var(--indicator-size) * 1%);
 			background: var(--rgb-hs);
 		}
 		.dial-cursor {
 			transform: translate(-50%, -50%)
 				rotate(calc(var(--hsv-h) * 360deg))
-				translateY(calc(-100% * ((50 - var(--line-thickness)/2)/var(--dial-cursor-size))));
-			width: calc(var(--dial-cursor-size)*1%);
-			height: calc(var(--dial-cursor-size)*1%);
+				translateY(calc(-100% * ((50 - var(--line-thickness) / 2) / var(--dial-cursor-size))));
+			width: calc(var(--dial-cursor-size) * 1%);
+			height: calc(var(--dial-cursor-size) * 1%);
 			background: var(--background-color);
 		}
 		.dial-cursor::after {
@@ -273,18 +348,18 @@
 			position: relative;
 			width: 100%;
 			margin-top: 20px;
-			padding-top: calc(var(--slider-cursor-size)*1%);
+			padding-top: calc(var(--slider-cursor-size) * 1%);
 		}
 		.slider-bar {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
 			width: 100%;
-			height: calc(100%*var(--line-thickness)/var(--slider-cursor-size));
+			height: calc(100% * var(--line-thickness) / var(--slider-cursor-size));
 			border-radius: 10000px;
 		}
 		.slider-cursor {
-			width: calc(var(--slider-cursor-size)*1%);
+			width: calc(var(--slider-cursor-size) * 1%);
 			background: var(--background-color);
 			height: 100%;
 		}
@@ -312,9 +387,110 @@
 			width: 80%; height: 80%;
 			background: var(--rgb-hsv);
 		}
+
+		
+		.palette-picker {
+			--active-entry: 0;
+			--entry-count: 5;
+			--button-size: 12;
+			--entry-size: 15;
+		}
+
+		.palette-picker {
+			position: relative;
+			width: 200px;
+			margin-left: 100px;
+			margin-top: 50px;
+		}
+
+		.palette-picker,
+		.palette-picker *,
+		.palette-picker *::after {
+			user-select: none;
+			box-sizing: border-box;
+		}
+
+		.palette-container {
+			background-color: #4c4c4f;
+			border-radius: 8px;
+			position: relative;
+			width: 100%;
+			padding-top: calc(var(--entry-size) * 1%);
+		}
+
+		.palette-entry,
+		.palette-entry::after,
+		.palette-indicator {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			border-radius: 50%;
+		}
+
+		.palette-decrease,
+		.palette-increase,
+		.palette-decrease::after,
+		.palette-increase::after {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			border-radius: 15%;
+		}
+
+		.palette-decrease,
+		.palette-increase {
+			background: #4c4c4f;
+			height: calc(var(--button-size) / var(--entry-size) * 100%);
+			width: calc(var(--button-size) * 1%);
+		}
+
+		.palette-decrease {
+			left: 0%;
+		}
+		.palette-increase {
+			left: 100%;
+		}
+
+		.palette-decrease::after,
+		.palette-increase::after {
+			content: '';
+			width: 80%; height: 80%;
+			background: white;
+			z-index: -1;
+		}
+
+		.palette-decrease svg,
+		.palette-increase svg {
+			position: absolute;
+			top: 50%; left: 50%;
+			transform: translate(-50%, -50%);
+			width: 80%; height: 80%;
+		}
+
+		.palette-entry {
+			left: calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--index) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%);
+			height: 100%;
+			width: calc(var(--entry-size) * 1%);
+		}
+		.palette-entry::after {
+			content: '';
+			width: 80%; height: 80%;
+			background: var(--entry-color);
+		}
+
+		.palette-indicator {
+			left: calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--active-entry) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%);
+			background: white;
+			border-radius: 8px;
+			width: calc(var(--entry-size) * .9 * 1%);
+			height: 20%;
+			top: 120%;
+		}
+
 	</style>
 </head>
 <body>
+	<div class="palette-picker" listener="paletteListener"></div>
 	<div class="color-picker" listener="onColorChange"></div>
 </body>
 </html>
