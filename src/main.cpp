@@ -28,6 +28,7 @@ websockets::WebsocketsClient socketClient;
 enum API{
   COLOR = 100,
   PATTERN,
+  PALETTE_SIZE,
 };
 
 // lights
@@ -35,6 +36,7 @@ CRGB leds[NUM_LEDS];
 byte currentPattern = 0;
 byte sequenceLength = 1;
 CRGB colorPallet[] = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x390F14};
+byte paletteSize = 5;
 
 // TODO: split networking and lights into their own files. Getting messy
 void sinelon() {
@@ -46,7 +48,7 @@ void sinelon() {
 
 void checkered() {
   for(int i = 0; i < NUM_LEDS; i++){
-    leds[i] = colorPallet[i%5];
+    leds[i] = colorPallet[i%paletteSize];
   }
 }
 
@@ -108,6 +110,11 @@ void messageCallback(websockets::WebsocketsMessage msg){
           Serial.printf("Pattern: %d", message[1]);
         }
         break;
+      case PALETTE_SIZE:
+        if(message.size() > 1 && message[1] <= 5 && message[1] > 0){
+          paletteSize = message[1];
+          Serial.printf("Palette size: %d", message[1]);
+        }
       default:
         Serial.println("Unknown");
     }

@@ -12,6 +12,7 @@
 		const API = {
 			COLOR: 100,
 			PATTERN: 101,
+			PALETTE_SIZE: 102,
 		}
 
 		function init() {
@@ -158,7 +159,7 @@
 		class PalettePicker {
 			size = 5;
 			palette = [];
-			activeEntry = 0;
+			index = 0;
 			paletteElement;
 			entryElements = [];
 			callback;
@@ -196,15 +197,12 @@
 			}
 
 			paletteSelect(e) {
-				let newActive = e.target.getAttribute("index");
-				if(newActive === this.activeEntry) return;
-				this.activeEntry = newActive;
-				this.paletteElement.style.setProperty("--active-entry", this.activeEntry);
-				this.callback.onIndexChange(this.activeEntry);
+				this.setIndex(e.target.getAttribute("index"));
 			}
 
 			paletteDecrease(e) {
 				if(this.size < 2) return;
+				if(this.index >= this.size-1) this.setIndex(this.size-2);
 				this.size--;
 				this.callback.onSizeChange(this.size);
 			}
@@ -215,18 +213,25 @@
 				this.callback.onSizeChange(this.size);
 			}
 
-			setColor(h, s, v, index = this.activeEntry) {
+			setColor(h, s, v, index = this.index) {
 				let [r, g, b] = ColorPicker.hsvToRgb(h, s, 1);
 				this.palette[index] = {h: h, s: s, v: v};
 				this.entryElements[index].style.setProperty("--entry-color", `rgb(${r}, ${g}, ${b}`);
 			}
 
-			getColor(index = this.activeEntry) {
+			setIndex(newIndex) {
+				if(newIndex === this.index || newIndex >= this.size) return;
+				this.index = newIndex;
+				this.paletteElement.style.setProperty("--active-entry", this.index);
+				this.callback.onIndexChange(this.index);
+			}
+
+			getColor(index = this.index) {
 				return this.palette[index];
 			}
 
 			getIndex() {
-				return this.activeEntry;
+				return this.index;
 			}
 
 			static initAll(){
@@ -261,8 +266,8 @@
 				let {h, s, v} = palettePicker.getColor();
 				colorPicker.setcolor(h, s, v, false);
 			},
-			onSizeChange(count) {
-				console.log(`count: ${count}`);
+			onSizeChange(size) {
+				sendCommandToServer(API.PALETTE_SIZE, size);
 			}
 		}
 
