@@ -28,6 +28,7 @@ websockets::WebsocketsClient socketClient;
 enum API{
   COLOR = 100,
   PATTERN,
+  PALETTE_SIZE,
 };
 
 // lights
@@ -35,6 +36,7 @@ CRGB leds[NUM_LEDS];
 byte currentPattern = 0;
 byte sequenceLength = 1;
 CRGB colorPallet[] = {0xFF0000, 0xFFFF00, 0x00FF00, 0x00FFFF, 0x390F14};
+byte paletteSize = 5;
 
 // TODO: split networking and lights into their own files. Getting messy
 void sinelon() {
@@ -46,7 +48,7 @@ void sinelon() {
 
 void checkered() {
   for(int i = 0; i < NUM_LEDS; i++){
-    leds[i] = colorPallet[i%5];
+    leds[i] = colorPallet[i%paletteSize];
   }
 }
 
@@ -84,14 +86,23 @@ void initWebServices() {
 void messageCallback(websockets::WebsocketsMessage msg){
     Serial.print("Got Message: ");
     std::string message = msg.rawData();
+    if(message.size() == 0){
+      Serial.println("Empty message");
+      return;
+    }
 
     switch(message[0]){
       case COLOR:
+        if(message.size() != 5){
+          Serial.println("Mis-sized color");
+          return;
+        }
         Serial.print("Color: ");
-        for(int i = 1; i < message.size(); i++){
+        for(int i = 2; i < message.size(); i++){
           Serial.printf("%02x ", message[i]);
         }
-        Serial.println();
+        Serial.printf("Index: %d\n", message[1]);
+        colorPallet[(uint8_t)message[1]] = CRGB(message[2], message[3], message[4]);
         break;
       case PATTERN:
         if(message.size() > 1 && message[1] < patternsCount){
@@ -99,6 +110,11 @@ void messageCallback(websockets::WebsocketsMessage msg){
           Serial.printf("Pattern: %d", message[1]);
         }
         break;
+      case PALETTE_SIZE:
+        if(message.size() > 1 && message[1] <= 5 && message[1] > 0){
+          paletteSize = message[1];
+          Serial.printf("Palette size: %d", message[1]);
+        }
       default:
         Serial.println("Unknown");
     }
@@ -130,7 +146,7 @@ void setup() {
   initWebServices();
   webServer.begin();
 
-  FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, 250).setCorrection(TypicalPixelString);
+  FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, 0, NUM_LEDS).setCorrection(TypicalPixelString);
   FastLED.setBrightness(MAX_BRIGHTNESS);
 }
 
