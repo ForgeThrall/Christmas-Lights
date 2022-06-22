@@ -331,8 +331,7 @@
 
 		.dial-container {
 			position: relative;
-			width: 100%;
-			padding-top: 100%;
+			aspect-ratio: 1;
 		}
 		/* centered circle */
 		/* TODO: css precompiler with mixins */
@@ -347,21 +346,20 @@
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
 			border-radius: 50%;
+			aspect-ratio: 1;
 		}
 		.dial-ring {
-			width: 100%; height: 100%;
+			width: 100%;
 			background: conic-gradient(#F00, #FF0, #0F0, #0FF, #00F, #F0F, #F00);
 		}
 		.dial-ring::before {
 			content: '';
 			width: calc(100% - var(--line-thickness) * 2 * 1%);
-			height: calc(100% - var(--line-thickness) * 2 * 1%);
 			background: var(--background-color);
 		}
 		.dial-ring::after {
 			content: '';
 			width: calc(var(--indicator-size) * 1%);
-			height: calc(var(--indicator-size) * 1%);
 			background: var(--rgb-hs);
 		}
 		.dial-cursor {
@@ -369,12 +367,11 @@
 				rotate(calc(var(--hsv-h) * 360deg))
 				translateY(calc(-100% * ((50 - var(--line-thickness) / 2) / var(--dial-cursor-size))));
 			width: calc(var(--dial-cursor-size) * 1%);
-			height: calc(var(--dial-cursor-size) * 1%);
 			background: var(--background-color);
 		}
 		.dial-cursor::after {
 			content: '';
-			width: 80%; height: 80%;
+			width: 80%;
 			background: var(--rgb-h);
 		}
 
@@ -382,20 +379,19 @@
 			position: relative;
 			width: 100%;
 			margin-top: 20px;
-			padding-top: calc(var(--slider-cursor-size) * 1%);
+			aspect-ratio: 100 / var(--slider-cursor-size);
 		}
 		.slider-bar {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
 			width: 100%;
-			height: calc(100% * var(--line-thickness) / var(--slider-cursor-size));
+			aspect-ratio: 100 / var(--line-thickness);
 			border-radius: 10000px;
 		}
 		.slider-cursor {
 			width: calc(var(--slider-cursor-size) * 1%);
 			background: var(--background-color);
-			height: 100%;
 		}
 
 		.slider-bar.sat {
@@ -406,7 +402,7 @@
 		}
 		.slider-cursor.sat::after {
 			content: '';
-			width: 80%; height: 80%;
+			width: 80%;
 			background: var(--rgb-hs);
 		}
 
@@ -418,7 +414,7 @@
 		}
 		.slider-cursor.val::after {
 			content: '';
-			width: 80%; height: 80%;
+			width: 80%;
 			background: var(--rgb-hsv);
 		}
 
@@ -449,32 +445,38 @@
 			border-radius: 8px;
 			position: relative;
 			width: 100%;
-			padding-top: calc(var(--entry-size) * 1%);
+			aspect-ratio: 100 / var(--entry-size);
 		}
 
+		/* centered circles */
 		.palette-entry,
 		.palette-entry::after,
-		.palette-indicator {
+		.palette-indicator,
+		.palette-decrease,
+		.palette-increase,
+		.palette-decrease::after,
+		.palette-increase::after  {
 			position: absolute;
 			top: 50%; left: 50%;
 			transform: translate(-50%, -50%);
 			border-radius: 50%;
+			aspect-ratio: 1;
 		}
-
+		/* squircles */
 		.palette-decrease,
 		.palette-increase,
 		.palette-decrease::after,
 		.palette-increase::after {
-			position: absolute;
-			top: 50%; left: 50%;
-			transform: translate(-50%, -50%);
 			border-radius: 15%;
+		}
+		/* squares */
+		.palette-entry {
+			border-radius: 0%;
 		}
 
 		.palette-decrease,
 		.palette-increase {
 			background: #4c4c4f;
-			height: calc(var(--button-size) / var(--entry-size) * 100%);
 			width: calc(var(--button-size) * 1%);
 		}
 
@@ -488,7 +490,7 @@
 		.palette-decrease::after,
 		.palette-increase::after {
 			content: '';
-			width: 80%; height: 80%;
+			width: 80%;
 			background: white;
 			z-index: -1;
 		}
@@ -504,13 +506,12 @@
 		.palette-entry {
 			left: min(calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--index) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%),
 			          calc((((100 - var(--button-size) + var(--entry-size)) / (          6           )) * (       5        ) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%));
-			height: 100%;
 			width: calc(var(--entry-size) * 1%);
 			transition: left .25s, opacity .25s;
 		}
 		.palette-entry::after {
 			content: '';
-			width: 80%; height: 80%;
+			width: 80%;
 			background: var(--entry-color);
 		}
 
