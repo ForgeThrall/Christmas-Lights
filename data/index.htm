@@ -111,8 +111,10 @@
 			// TODO: Add touch-drag capability
 			static dragBootstrap(element, handler) {
 				element.addEventListener("mousedown", (e) => {
+					element.style.setProperty("transition", "none");
 					document.addEventListener("mousemove", handler);
 					document.addEventListener("mouseup", function () {
+						element.style.removeProperty("transition");
 						document.removeEventListener("mousemove", handler)
 					}, {once: true});
 					handler(e);
@@ -392,6 +394,7 @@
 			width: 100%;
 			margin-top: 10%;
 			aspect-ratio: 100 / var(--slider-cursor-size);
+			transition: left .25s;
 		}
 		.slider-bar {
 			position: absolute;
@@ -404,6 +407,7 @@
 		.slider-cursor {
 			width: calc(var(--slider-cursor-size) * 1%);
 			background: var(--background-color);
+			transition: inherit;
 		}
 
 		.slider-bar.sat {
