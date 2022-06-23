@@ -299,6 +299,18 @@
 			cursor: default;
 		}
 
+		body {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.bounding-box {
+			/* magic numbers */
+			width: min(80vw, 80vh * 200 / 355);
+		}
+
 		
 		.color-picker {
 			--background-color: #1d1d1f;
@@ -318,15 +330,15 @@
 		}
 		.color-picker,
 		.color-picker *,
+		.color-picker *::before
 		.color-picker *::after {
 			user-select: none;
 			box-sizing: border-box;
 		}
 
 		.color-picker {
-			width: 200px;
-			margin-left: 100px;
-			margin-top: 25px;
+			width: 100%;
+			margin-top: 12.5%;
 		}
 
 		.dial-container {
@@ -378,7 +390,7 @@
 		.slider-container {
 			position: relative;
 			width: 100%;
-			margin-top: 20px;
+			margin-top: 10%;
 			aspect-ratio: 100 / var(--slider-cursor-size);
 		}
 		.slider-bar {
@@ -387,7 +399,7 @@
 			transform: translate(-50%, -50%);
 			width: 100%;
 			aspect-ratio: 100 / var(--line-thickness);
-			border-radius: 10000px;
+			border-radius: 100vh;
 		}
 		.slider-cursor {
 			width: calc(var(--slider-cursor-size) * 1%);
@@ -428,9 +440,7 @@
 
 		.palette-picker {
 			position: relative;
-			width: 200px;
-			margin-left: 100px;
-			margin-top: 50px;
+			width: 100%;
 		}
 
 		.palette-picker,
@@ -442,7 +452,7 @@
 
 		.palette-container {
 			background-color: #4c4c4f;
-			border-radius: 8px;
+			border-radius: calc(.04 * min(80vw, 80vh * 200 / 355));
 			position: relative;
 			width: 100%;
 			aspect-ratio: 100 / var(--entry-size);
@@ -518,7 +528,7 @@
 		.palette-indicator {
 			left: calc((((100 - var(--button-size) + var(--entry-size)) / (var(--entry-count) + 1)) * (var(--active-entry) + 1) + var(--button-size) / 2 - var(--entry-size) / 2) * 1%);
 			background: white;
-			border-radius: 8px;
+			border-radius: 100vh;
 			width: calc(var(--entry-size) * .9 * 1%);
 			height: 20%;
 			top: 120%;
@@ -528,8 +538,10 @@
 	</style>
 </head>
 <body>
-	<div class="palette-picker" listener="paletteListener"></div>
-	<div class="color-picker" listener="colorListener"></div>
+	<div class="bounding-box">
+		<div class="palette-picker" listener="paletteListener"></div>
+		<div class="color-picker" listener="colorListener"></div>
+	</div>
 </body>
 </html>
 <script>
