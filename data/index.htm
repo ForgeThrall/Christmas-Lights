@@ -89,21 +89,17 @@
 			}
 
 			setcolor(h, s, v, triggerUpdate = true) {
-				let _h;
-				if(!triggerUpdate) {
-					// css rotation animation needs special cases to take the shortest path
-					_h = h;
-					let current = this.pickerElement.style.getPropertyValue("--hsv-h");
-					while(_h - current >  .5) _h -= 1;
-					while(_h - current < -.5) _h += 1;
-					console.log(_h - current, _h);
-				}
+				// css rotation animation needs special cases to take the shortest path
+				let _h = h ?? this.hsv.h;
+				let current = this.pickerElement.style.getPropertyValue("--hsv-h");
+				while(_h - current >  .5) _h -= 1;
+				while(_h - current < -.5) _h += 1;
 
 				this.hsv.h = h ?? this.hsv.h;
 				this.hsv.s = s ?? this.hsv.s;
 				this.hsv.v = v ?? this.hsv.v;
 
-				this.pickerElement.style.setProperty("--hsv-h", _h ?? this.hsv.h);
+				this.pickerElement.style.setProperty("--hsv-h", _h);
 				this.pickerElement.style.setProperty("--hsv-s", this.hsv.s);
 				this.pickerElement.style.setProperty("--hsv-v", this.hsv.v);
 
