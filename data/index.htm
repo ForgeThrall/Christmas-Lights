@@ -89,11 +89,17 @@
 			}
 
 			setcolor(h, s, v, triggerUpdate = true) {
+				// css rotation animation needs special cases to take the shortest path
+				let _h = h ?? this.hsv.h;
+				let current = this.pickerElement.style.getPropertyValue("--hsv-h");
+				while(_h - current >  .5) _h -= 1;
+				while(_h - current < -.5) _h += 1;
+
 				this.hsv.h = h ?? this.hsv.h;
 				this.hsv.s = s ?? this.hsv.s;
 				this.hsv.v = v ?? this.hsv.v;
 
-				this.pickerElement.style.setProperty("--hsv-h", this.hsv.h);
+				this.pickerElement.style.setProperty("--hsv-h", _h);
 				this.pickerElement.style.setProperty("--hsv-s", this.hsv.s);
 				this.pickerElement.style.setProperty("--hsv-v", this.hsv.v);
 
@@ -111,8 +117,10 @@
 			// TODO: Add touch-drag capability
 			static dragBootstrap(element, handler) {
 				element.addEventListener("mousedown", (e) => {
+					element.style.setProperty("transition", "none");
 					document.addEventListener("mousemove", handler);
 					document.addEventListener("mouseup", function () {
+						element.style.removeProperty("transition");
 						document.removeEventListener("mousemove", handler)
 					}, {once: true});
 					handler(e);
@@ -321,7 +329,7 @@
 			--slider-cursor-size: 15;
 			position: relative;
 			background: var(--background-color);
-			--hsv-h: 1;
+			--hsv-h: 0;
 			--hsv-s: .5;
 			--hsv-v: .5;
 			--rgb-h: #F00;
@@ -344,6 +352,7 @@
 		.dial-container {
 			position: relative;
 			aspect-ratio: 1;
+			transition: transform .25s;
 		}
 		/* centered circle */
 		/* TODO: css precompiler with mixins */
@@ -380,6 +389,7 @@
 				translateY(calc(-100% * ((50 - var(--line-thickness) / 2) / var(--dial-cursor-size))));
 			width: calc(var(--dial-cursor-size) * 1%);
 			background: var(--background-color);
+			transition: inherit;
 		}
 		.dial-cursor::after {
 			content: '';
@@ -392,6 +402,7 @@
 			width: 100%;
 			margin-top: 10%;
 			aspect-ratio: 100 / var(--slider-cursor-size);
+			transition: left .25s;
 		}
 		.slider-bar {
 			position: absolute;
@@ -404,6 +415,7 @@
 		.slider-cursor {
 			width: calc(var(--slider-cursor-size) * 1%);
 			background: var(--background-color);
+			transition: inherit;
 		}
 
 		.slider-bar.sat {
