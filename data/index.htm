@@ -88,6 +88,8 @@
 				this.setcolor(null, null, val);
 			}
 
+			// TODO: the dial selector snaps to the new color before it reaches the new position
+			// tie it to the position blend
 			setcolor(h, s, v, triggerUpdate = true) {
 				// css rotation animation needs special cases to take the shortest path
 				let _h = h ?? this.hsv.h;
@@ -166,6 +168,7 @@
 			}
 		}
 
+		// TODO: Add list size parameters (eg, pattern that needs 2-4 colors)
 		class PalettePicker {
 			size = 5;
 			palette = [];
