@@ -63,11 +63,12 @@
 				return elements;
 			}
 
-			// TODO: this has a bug. Center of circle is sometimes not center of drag area
 			hueDialDrag(e) {
 				let rect = this.hueContainer.getBoundingClientRect();
-				let xTarget = e.pageX - rect.x - rect.width/2;
-				let yTarget = e.pageY - rect.y - rect.height/2;
+				let pageX = e.pageX ?? e.touches[0].pageX;
+				let pageY = e.pageY ?? e.touches[0].pageY;
+				let xTarget = pageX - rect.x - rect.width/2;
+				let yTarget = pageY - rect.y - rect.height/2;
 				let t = Math.atan2(yTarget, xTarget);
 
 				let hue = ColorPicker.rangeMap(t, -Math.PI, Math.PI, 0, 1, -Math.PI/2);
@@ -76,14 +77,16 @@
 
 			satSliderDrag(e) {
 				let rect = this.satContainer.getBoundingClientRect();
-				let x = Math.max(0, Math.min(e.pageX - rect.x, rect.width));
+				let pageX = e.pageX ?? e.touches[0].pageX;
+				let x = Math.max(0, Math.min(pageX - rect.x, rect.width));
 				let sat = ColorPicker.rangeMap(x, 0, rect.width, 0, 1);
 				this.setcolor(null, sat, null);
 			}
 
 			valSliderDrag(e) {
 				let rect = this.valContainer.getBoundingClientRect();
-				let x = Math.max(0, Math.min(e.pageX - rect.x, rect.width));
+				let pageX = e.pageX ?? e.touches[0].pageX;
+				let x = Math.max(0, Math.min(pageX - rect.x, rect.width));
 				let val = ColorPicker.rangeMap(x, 0, rect.width, 0, 1);
 				this.setcolor(null, null, val);
 			}
@@ -124,6 +127,16 @@
 					document.addEventListener("mouseup", function () {
 						element.style.removeProperty("transition");
 						document.removeEventListener("mousemove", handler)
+					}, {once: true});
+					handler(e);
+				})
+				//same but for touch events
+				element.addEventListener("touchstart", (e) => {
+					element.style.setProperty("transition", "none");
+					document.addEventListener("touchmove", handler);
+					document.addEventListener("touchend", function () {
+						element.style.removeProperty("transition");
+						document.removeEventListener("touchmove", handler)
 					}, {once: true});
 					handler(e);
 				})
