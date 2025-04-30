@@ -319,7 +319,7 @@
 			height: 100%;
 			margin: 0%;
 			padding: 0%;
-			background-color: var(--background-color);
+			background: var(--background-color);
 			cursor: default;
 		}
 
@@ -337,20 +337,21 @@
 
 		
 		.color-picker {
-			--background-color: #1d1d1f;
 			/* in percents of dial diameter */
 			--line-thickness: 5;
 			--indicator-size: 40;
 			--dial-cursor-size: 18;
 			--slider-cursor-size: 15;
-			position: relative;
-			background: var(--background-color);
 			--hsv-h: 0;
 			--hsv-s: .5;
 			--hsv-v: .5;
 			--rgb-h: #F00;
 			--rgb-hs: #FF8080;
 			--rgb-hsv: #804040;
+			position: relative;
+			background: var(--background-color);
+			width: 100%;
+			margin-top: 12.5%;
 		}
 		.color-picker,
 		.color-picker *,
@@ -358,11 +359,6 @@
 		.color-picker *::after {
 			user-select: none;
 			box-sizing: border-box;
-		}
-
-		.color-picker {
-			width: 100%;
-			margin-top: 12.5%;
 		}
 
 		.dial-container {
@@ -464,9 +460,6 @@
 			--entry-count: 5;
 			--button-size: 12;
 			--entry-size: 15;
-		}
-
-		.palette-picker {
 			position: relative;
 			width: 100%;
 		}
@@ -479,7 +472,7 @@
 		}
 
 		.palette-container {
-			background-color: #4c4c4f;
+			background: #4c4c4f;
 			border-radius: calc(.04 * min(80vw, 80vh * 200 / 355));
 			position: relative;
 			width: 100%;
@@ -569,7 +562,8 @@
 	<div class="bounding-box">
 		<div class="palette-picker" listener="paletteListener"></div>
 		<div class="color-picker" listener="colorListener"></div>
-		<select name="pattern" id="pattern-select">
+		<select class="pattern-selector" id="pattern-select">
+      <button><selectedcontent></selectedcontent></button>
 			<option value="">--Choose a pattern--</option>
 			<option value="solid">Solid colors</option>
 			<option value="sinelon">Sinelon</option>
