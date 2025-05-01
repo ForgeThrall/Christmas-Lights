@@ -351,7 +351,7 @@
 			position: relative;
 			background: var(--background-color);
 			width: 100%;
-			margin-top: 12.5%;
+			margin-bottom: 12.5%;
 		}
 		.color-picker,
 		.color-picker *,
@@ -556,19 +556,31 @@
 			transition: left .25s;
 		}
 
+		.pattern-selector {
+			box-sizing: border-box;
+			width: 100%;
+			border-radius: calc(.04 * min(80vw, 80vh * 200 / 355));
+			position: relative;
+			aspect-ratio: 100 / 15;
+			padding: 0;
+			border: 0;
+			background: #4c4c4f;
+			appearance: none;
+		}
+
 	</style>
 </head>
 <body>
 	<div class="bounding-box">
-		<div class="palette-picker" listener="paletteListener"></div>
 		<div class="color-picker" listener="colorListener"></div>
-		<select class="pattern-selector" id="pattern-select">
+		<div class="palette-picker" listener="paletteListener"></div>
+		<!-- <select class="pattern-selector" id="pattern-select">
       <button><selectedcontent></selectedcontent></button>
 			<option value="">--Choose a pattern--</option>
 			<option value="solid">Solid colors</option>
 			<option value="sinelon">Sinelon</option>
 			<option value="glitter">Glitter</option>
-		</select>
+		</select> -->
 	</div>
 </body>
 </html>
